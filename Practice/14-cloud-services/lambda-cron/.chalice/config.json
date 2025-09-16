@@ -1,0 +1,9 @@
+{
+  "version": "2.0",
+  "app_name": "lambda-cron",
+  "stages": {
+    "dev": {
+      "lambda_timeout": 300
+    }
+  }
+}

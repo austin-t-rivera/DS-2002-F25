@@ -1,0 +1,75 @@
+{
+  "labels": {
+    "HAPROXY_0_STICKY": "true",
+    "HAPROXY_GROUP": "external",
+    "HAPROXY_0_VHOST": "data.lab.org"
+  },
+  "id": "/lab/big-databio",
+  "backoffFactor": 1.15,
+  "backoffSeconds": 1,
+  "constraints": [
+    [
+      "@region",
+      "IS",
+      "uva-udc"
+    ]
+  ],
+  "container": {
+    "type": "MESOS",
+    "volumes": [
+      {
+        "containerPath": "/usr/share/nginx/html",
+        "hostPath": "/mnt/qproject/lab/www",
+        "mode": "RO"
+      }
+    ],
+    "portMappings": [
+      {
+        "containerPort": 80,
+        "hostPort": 0,
+        "protocol": "tcp"
+      }
+    ],
+    "docker": {
+      "image": "databio/nginx-auto:latest",
+      "forcePullImage": true,
+      "parameters": []
+    }
+  },
+  "cpus": 0.5,
+  "disk": 0,
+  "healthChecks": [
+    {
+      "gracePeriodSeconds": 5,
+      "ignoreHttp1xx": false,
+      "intervalSeconds": 3,
+      "maxConsecutiveFailures": 2,
+      "portIndex": 0,
+      "timeoutSeconds": 2,
+      "delaySeconds": 15,
+      "protocol": "HTTP",
+      "path": "/"
+    }
+  ],
+  "instances": 1,
+  "maxLaunchDelaySeconds": 300,
+  "mem": 512,
+  "gpus": 0,
+  "networks": [
+    {
+      "mode": "container/bridge"
+    }
+  ],
+  "requirePorts": false,
+  "upgradeStrategy": {
+    "maximumOverCapacity": 1,
+    "minimumHealthCapacity": 1
+  },
+  "killSelection": "YOUNGEST_FIRST",
+  "unreachableStrategy": {
+    "inactiveAfterSeconds": 0,
+    "expungeAfterSeconds": 0
+  },
+  "role": "shefflab",
+  "fetch": []
+}

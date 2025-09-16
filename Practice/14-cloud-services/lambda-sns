@@ -1,0 +1,6 @@
+import json
+
+def lambda_handler(event, context):
+    print(event)
+    RESPONSE = 'Records'.[0].'Sns'
+    print(RESPONSE)

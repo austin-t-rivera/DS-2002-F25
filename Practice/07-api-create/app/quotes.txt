@@ -1,0 +1,10 @@
+Premature optimization is the root of all evil (or at least most of it) in programming. -- Donald Knuth
+Keep away from people who try to belittle your ambitions. Small people always do that, but the really great make you feel that you, too, can become great. -- Mark Twain
+No problem should ever have to be solved twice. -- Eric S. Raymond, How to become a hacker
+Attitude is no substitute for competence. -- Eric S. Raymond, How to become a hacker
+I have never met a man so ignorant that I couldn't learn something from him. -- Galileo Galilei
+For the things we have to learn before we can do them, we learn by doing them. -- Aristotle.
+Show, don't tell. -- unknown
+Any fool can make the simple complex, only a smart person can make the complex simple. -- unknown
+All problems in computer science can be solved by another level of indirection. -- Butler Lampson
+If I tell you I'm good, you would probably think I'm boasting. If I tell you I'm no good, you know I'm lying. -- Bruce Lee

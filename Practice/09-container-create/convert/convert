@@ -1,0 +1,74 @@
+#!/usr/bin/python3
+
+import sys
+import getopt
+import xlrd  
+import csv 
+import json
+import requests
+
+
+def fetch_remote(OBJID,IN_XLS):
+  # fetch remote file:
+  url = "https://ds3002-resources.s3.amazonaws.com/data/" + OBJID + ".xls"
+  response = requests.get(url)
+  open(IN_XLS, 'wb').write(response.content)
+
+
+def convert_excel(IN_XLS,OUT_CSV):
+  # open workbook by sheet index, 
+  sheet = xlrd.open_workbook(IN_XLS).sheet_by_index(0)
+  
+  # writer object is created 
+  col = csv.writer(open(OUT_CSV,'w',newline="",encoding='utf-8'))
+  
+  # writing the data into csv file 
+  for row in range(sheet.nrows): 
+    col.writerow(sheet.row_values(row)) 
+  
+
+def csv_to_json(csvFilePath, jsonFilePath):
+  jsonArray = []      
+  with open(csvFilePath, encoding='utf-8') as csvf: 
+
+    #load csv file data using csv library's dictionary reader
+    csvReader = csv.DictReader(csvf) 
+
+    #convert each csv row into python dict
+    for row in csvReader: 
+      jsonArray.append(row)
+
+  #convert python jsonArray to JSON String and write to file
+  with open(jsonFilePath, 'w', encoding='utf-8') as jsonf: 
+    jsonString = json.dumps(jsonArray, indent=4)
+    jsonf.write(jsonString)
+          
+
+def main(argv):
+  inputfile = ''
+  try:
+    opts, args = getopt.getopt(argv,"hi:o:",["ifile="])
+  except getopt.GetoptError:
+    print('convert -i <inputid>')
+    sys.exit(2)
+  for opt, arg in opts:
+    if opt == '-h':
+      print('convert -i <inputid>')
+      sys.exit()
+    elif opt in ("-i", "--ifile"):
+      OBJID = arg
+  print('Input ID is ', OBJID)
+
+  # OBJID = "0987654321"
+  OUT_CSV = OBJID + ".csv"
+  OUT_JSON = OBJID + ".json"
+  IN_XLS = OBJID + ".xls"
+
+  fetch_remote(OBJID,IN_XLS)
+  convert_excel(IN_XLS,OUT_CSV)
+  csvFilePath = OUT_CSV
+  jsonFilePath = OUT_JSON
+  csv_to_json(csvFilePath, jsonFilePath)
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
