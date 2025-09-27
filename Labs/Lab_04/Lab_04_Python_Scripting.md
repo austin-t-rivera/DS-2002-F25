@@ -2,6 +2,14 @@
 
 **Objective:** In this lab, you will build a sophisticated, multi-stage data pipeline using `curl`, Bash scripts, Python scripts, and `Makefile` automation. The lab is divided into three progressive versions, each introducing new concepts in data processing and orchestration.
 
+---
+
+<img width="250" height="342" alt="image" src="https://github.com/user-attachments/assets/ae3823f6-c73b-4f0e-a761-32c68d4e3caf" />
+<img width="250" height="342" alt="image" src="https://github.com/user-attachments/assets/35d56fc3-35c1-41c4-b29a-095aa643aa42" />
+<img width="250" height="342" alt="image" src="https://github.com/user-attachments/assets/194cfb72-a392-4e19-9cd5-d0d3a9238afc" />
+
+---
+
 Before starting the lab, I encourage you to spend a few minutes exploring the data so you know what you will be looking at:
 - [Sample JSON](https://docs.pokemontcg.io/api-reference/cards/card-object#sample-json)
 - [Sample CURL Code](https://docs.pokemontcg.io/api-reference/sets/search-sets#code-samples)
@@ -19,7 +27,7 @@ Before starting the lab, I encourage you to spend a few minutes exploring the da
 
 <br>
 
-### Navigate to your `DS-2002-F25` directory, update your `main` branch, and setup the Activity.
+### Navigate to your `DS-2002-F25` directory, update your `main` branch, and setup the Lab.
 1. Open your Git Bash (Windows) or Terminal (macOS).
 
 2. Navigate to your `DS-2002-F25` directory. For example: `cd ~/Documents/GitHub/DS-2002-F25/` (yours may differ)
@@ -55,7 +63,7 @@ mkdir pokemon_lab && cd pokemon_lab
 Building off of what we did in Activity 4, you still want to understand the value of your inheretance, a binder of Pokémon cards from your older cousin Austin! Because you want to simplify and automate this process, you are building an application to track the market prices of your new Pokémon cards. Your first task is to create a reliable and repeatable data pipeline that can pull card data from an API, process it, and output the results to a CSV file.
 
 ### 1.1 Create Your Test Data
-Before you dive in and start developing, you know that you will first want some simple reliable data to work with, so you put together a JSON file that has a few cards and their information that you pulled by manually searching on TCG Player. You do this by create a small, local JSON file named `test_cards.json` with the following content. (NOTE: This will serve as a mock API response, allowing you to test your Python script in isolation.)
+Before you dive in and start developing, you know that you will first want some simple reliable data to work with, so you put together a JSON file that has a few cards and their information that you pulled by manually searching on TCG Player. You do this by creating a small, local JSON file named `test_cards.json` with the following content. (NOTE: This will serve as a mock API response, allowing you to test your Python script in isolation.)
 
 ```
 {
@@ -89,7 +97,7 @@ Before you dive in and start developing, you know that you will first want some 
 
 This Python script will read JSON from standard input, parse it, and write a CSV to standard output. The use of a `main` function and a `__main__` block allows you to test it easily.
 
-**Local Testing with a `__main__` Block:** A key practice in professional software development is making your scripts modular and testable. The if `__name__ == __main__`: block allows you to write code that only runs when the script is executed directly, which is perfect for local testing.
+**Local Testing with a `__main__` Block:** A key practice in professional software development is making your scripts modular and testable. The `if __name__ == __main__`: block allows you to write code that only runs when the script is executed directly, which is perfect for local testing.
 
 1. Create a file named `process_cards.py` and make it executable.
 
@@ -132,30 +140,30 @@ This is the **first version** of your Makefile. It defines a single target, `car
 1. Create a file named `Makefile`.
 
 2. Copy and paste the following into the file. The `@` symbol at the beginning of a line prevents `make` from echoing the command before it is executed, keeping the output clean.
-` ` `Makefile
+```
 .PHONY: all clean
 
-all: cards.csv
+all: test_cards
 
 # This target prompts the user for API parameters and builds the URL dynamically.
-cards.csv:
+test_cards:
 	@echo "Enter the Card Set ID (e.g., base1, swsh1): "
 	@read SET_ID
 	@echo "Enter the page number (e.g., 1): "
 	@read PAGE_NUM
 	@echo "Enter the page size (e.g., 20): "
 	@read PAGE_SIZE
-	@curl -s "https://api.pokemontcg.io/v2/cards?q=set.id:$(SET_ID)&page=$(PAGE_NUM)&pageSize=$(PAGE_SIZE)" | ./process_cards.py > cards.csv
+	@curl -s "https://api.pokemontcg.io/v2/cards?q=set.id:$(SET_ID)&page=$(PAGE_NUM)&pageSize=$(PAGE_SIZE)" | python ./process_cards.py > test_cards.csv
 
 # This target cleans up generated files.
 clean:
-	@rm -f test_cards.json cards.csv
-` ` `
+	@rm -f test_cards.csv
+```
 
 3. Run the pipeline with `make`.
-` ` `bash
+```bash
 make
-` ` `
+```
 
 ---
 
