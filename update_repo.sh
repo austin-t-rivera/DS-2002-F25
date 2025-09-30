@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Does this fix everything?
+
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
