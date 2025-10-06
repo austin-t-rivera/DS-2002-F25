@@ -102,8 +102,8 @@ Pikachu,base1,58,0,3,5
 ```
 
 3.  Real Inventory Files - within the Lab_4 assignment in Canvas, there should be two files to download. Download and place them into your Inventory Directory.
-    - `card_inventory/binder_1.csv`
-    - `card_inventory/binder_2.csv`
+  - `card_inventory/binder_1.csv`
+  - `card_inventory/binder_2.csv`
 
 <br>
 
@@ -124,7 +124,7 @@ This script prompts the user for a set ID and fetches the corresponding card dat
 1.  Add an appropriate shebang.
 2.  Use `read` to prompt the user for the "TCG Card Set ID" (e.g., base1, base4), and save their response as a local variable called `SET_ID`.
 3.  Add this `if` statement to ensure an error is thrown if the `$SET_ID` provided is empty:
-```
+```bash
 if [ -z "$SET_ID" ]; then
     echo "Error: Set ID cannot be empty." >&2
     exit 1
@@ -152,17 +152,14 @@ This script loops through all existing JSON files in the lookup directory and re
 
 ---
 
-## Step 2: Python Scripts for Data Processing and Reporting
-Create these files in the root directory (`pokemon_lab/`) and remember to make them executable: `chmod +x <filename>`.
+## Step 2: Python Script for Data ETL - `update_portfolio.py`
+Create this file in the root directory (`pokemon_lab/`) and remember to make them executable: `chmod +x <filename>`.
 
-<br>
-
-### `update_portfolio.py` (ETL)
 This script handles the full data pipeline: loading card details (JSON) and inventory (CSV), merging them, performing calculations, and outputting the final portfolio CSV.
 
 <br>
 
-#### NOTE about this file
+### NOTE about this file
 The underscore prefix (`_`) before a function name in Python, like in `_load_lookup_data`, is not strictly necessary but is a widely adopted convention to indicate that the function is intended for internal use within the current module (script or class).
 Here's a breakdown of why it's used:
 - Convention (Good Practice): It signals to other programmers (and to you, later) that this function is a "helper" or "private" function. You're "discouraging" direct calls to it from outside the module.
@@ -172,7 +169,7 @@ In short, it's a strong signal of intent to keep the function internal, making t
 
 <br>
 
-#### Function 1: `_load_lookup_data(lookup_dir)` (Load JSON Prices)
+### Function 1: `_load_lookup_data(lookup_dir)` (Load JSON Prices)
 
 **What it does**: This function is responsible for the "E" (Extraction) and initial "T" (Transformation) of the JSON price data. It reads every JSON file, flattens the complex nested price structure, and isolates the single highest market price for each unique card ID.
 
@@ -194,7 +191,7 @@ In short, it's a strong signal of intent to keep the function internal, making t
 
 <br>
 
-#### Function 2: `_load_inventory_data(inventory_dir)` (Load CSV Inventory)
+### Function 2: `_load_inventory_data(inventory_dir)` (Load CSV Inventory)
 
 **What it does**: This function handles the "E" (Extraction) of the local inventory CSV data. Critically, it then performs a necessary "T" (Transformation) step by synthesizing the unified `card_id` from the raw `set_id` and `card_number` columns.
 
@@ -213,7 +210,7 @@ In short, it's a strong signal of intent to keep the function internal, making t
 
 <br>
 
-#### Function 3: `update_portfolio(inventory_dir, lookup_dir, output_file)` (Main ETL/Loading Logic)
+### Function 3: `update_portfolio(inventory_dir, lookup_dir, output_file)` (Main ETL/Loading Logic)
 
 **What it does**: This is the main orchestration function. It gathers the two processed DataFrames, executes the final "T" (Transformation/Merge), and completes the "L" (Loading) by writing the final report CSV.
 
@@ -234,7 +231,7 @@ In short, it's a strong signal of intent to keep the function internal, making t
 
 <br>
 
-#### Main Block: if __name__ == "__main__":
+### Main Block: if __name__ == "__main__":
 
 **What it does**: This block ensures the code runs only when the script is executed directly (not when imported as a module). It defines the test environment for quick validation.
 
@@ -247,10 +244,12 @@ In short, it's a strong signal of intent to keep the function internal, making t
 
 <br>
 
-### `generate_summary.py` (Reporting)
-This script is purely a reporting tool. Its job is to ingest the single, final output file from the ETL pipeline (`update_portfolio.py`) and present key aggregated insights to the user.
+---
 
-#### Function 1: `generate_summary(portfolio_file)`
+## Step 2: Python Script for Data Reporting - `generate_summary`
+This script is purely a reporting tool. Its job is to ingest the single, final output file from the ETL pipeline (`update_portfolio`) and present key aggregated insights to the user.
+
+### Function 1: `generate_summary(portfolio_file)`
 
 **What it does**: This is the core logic that reads the completed portfolio CSV, performs all required calculations (Total Value, Binder Values, Most Valuable Card), and prints the simplified report to the console.
 
@@ -268,7 +267,7 @@ This script is purely a reporting tool. Its job is to ingest the single, final o
 
 <br>
 
-#### Main Block: if __name__ == "__main__":
+### Main Block: if __name__ == "__main__":
 
 **What it does**: This block sets up the script's execution. It first attempts to use the production file (`card_portfolio.csv`); if that file is missing (e.g., after running `make Clean`), it gracefully falls back to using the test file (`test_card_portfolio.csv`) for convenience and debugging.
 
@@ -283,24 +282,45 @@ This script is purely a reporting tool. Its job is to ingest the single, final o
 
 ---
 
-## Step 3: Orchestration with Makefile
+## Step 4: Orchestration with Makefile
 The `Makefile` serves as the control center for the entire project, managing dependencies and providing a simple, consistent interface for running complex, multi-step tasks.
 
+Because this pipeline requires a `Makefile` that is more complex than you need to know for the purposes of this class, I am going to provide all of the code for you to copy and paste but with explanations to go along with it. All you need to do is create a new file called `Makefile` in your `pokemon_lab/` directory.
 
-```
+### Variables Section
+This section uses variables to define key file paths and names.
+```Makefile
 # --- Variables ---
 PORTFOLIO_CSV := card_portfolio.csv
 TEST_PORTFOLIO_CSV := test_card_portfolio.csv
 TEST_JSON := test_set.json
 TEST_SET_ID := base1
 TEST_LOOKUP_JSON := card_set_lookup/$(TEST_SET_ID).json
+```
+Explanation:
+- **Purpose**: Defining variables prevents repeating file names throughout the file. This makes the code easier to read and allows you to change a file name in one place (at the top) without breaking every target that uses it.
+- **Syntax**: `VAR_NAME := value` assigns the value. You reference the variable later using `$(VAR_NAME)`.
 
+<br>
+
+### Phony and Default Targets
+This section defines special targets and the command run by default.
+```Makefile
 # --- Phony Targets ---
 .PHONY: all Add_Set Refresh_Sets Update_Portfolio Generate_Summary Clean Test
 
 # --- Default Target ---
 all: Generate_Summary
+```
+Explanation:
+- `.PHONY`: This is crucial. It tells Make that these targets are not actual files to be built. If you had a file named `Clean`, and you ran `make Clean`, Make would see the file exists and skip the command unless `.PHONY` was used. We mark all high-level commands as phony.
+- `all`: This is the default target. If a user simply types `make`, this target runs. We set it to run `Generate_Summary` because the user's primary goal is usually to see the final report.
 
+<br>
+
+### Utility Targets
+These are simple wrappers for our Bash scripts, providing a clean way to call them.
+```Makefile
 # --- Utility Targets ---
 
 Add_Set:
@@ -310,7 +330,16 @@ Add_Set:
 Refresh_Sets:
 	@echo "--- Refreshing All Card Sets ---"
 	@./refresh_card_sets.sh
+```
+Explanation:
+- **`@` Symbol**: The `@` before a command prevents the command itself from being printed to the console (e.g., it prints "--- Adding New Card Set ---" but not `./add_card_set.sh`), keeping the output clean for the user.
+- **Direct Execution**: These targets simply execute the corresponding shell scripts (`.sh`).
 
+<br>
+
+### Main Pipeline Targets
+This is the core of the data pipeline, where we execute Python and Bash scripts in sequence.
+```Makefile
 # --- Main Pipeline Targets ---
 
 # Update_Portfolio: The core pipeline step.
@@ -334,20 +363,30 @@ Update_Portfolio: update_portfolio.py
 	fi
 
 	@echo "--- Running Data Merge and Calculation ---"
-	@./update_portfolio.py
+	@python ./update_portfolio.py
 
 # Generate_Summary: Depends on the portfolio being updated.
 Generate_Summary: $(PORTFOLIO_CSV) generate_summary.py
 	@echo "--- Generating Portfolio Summary ---"
-	@./generate_summary.py
+	@python ./generate_summary.py
+```
+Explanation:
+- **`Update_Portfolio` Dependencies**: It depends on `update_portfolio.py` existing. The body of this target is a sophisticated shell script that asks the user for input and conditionally calls other `make` targets (`make Add_Set`, `make Refresh_Sets`) before finally running the core Python ETL script.
+- **Conditional Logic**: The `read` command captures user input. The `if [ "$$USER_ADD" = "yes" ]` logic executes based on that input. Note the double dollar sign `($$USER_ADD)`; this is required because `make` substitutes single dollar signs, so we need to escape one for the shell to see the variable.
+- **`Generate_Summary` Dependencies**: This target explicitly depends on `$(PORTFOLIO_CSV)` and `generate_summary.py`. This is key: it tells Make, "Before you run the summary script, make sure the portfolio CSV exists." This dependency forces the `Update_Portfolio` target (and its dependency chain below) to run first if the file is missing or out-of-date.
 
+<br>
+
+### Test and Clean Targets
+These provide quick ways to run checks and wipe generated files.
+```Makefile
 # Test: Runs the pipeline with the small test data set.
 Test: update_portfolio.py $(TEST_JSON)
 	@echo "--- Running Test Portfolio Update Pipeline ---"
 	@# 1. Prepare the test environment by copying the test JSON to the expected lookup path
 	@cp $(TEST_JSON) $(TEST_LOOKUP_JSON)
 	@# 2. Run the Python script (which uses the test output filename in its __main__ block)
-	@./update_portfolio.py
+	@python ./update_portfolio.py
 	@# 3. Clean up the temporary test JSON file
 	@rm -f $(TEST_LOOKUP_JSON)
 	@echo "Test clean up complete."
@@ -365,6 +404,10 @@ Clean:
 	@rm -f card_set_lookup/*.json
 	@echo "Clean complete."
 ```
+Explanation:
+- `Test`: This runs a non-destructive, focused test. It copies the provided test JSON file into the lookup directory before running the Python script, ensuring the pipeline works without needing live API calls. It then cleans up the temporary JSON file it created.
+- **File Dependency Rule (`$(PORTFOLIO_CSV): Update_Portfolio`)**: This is the dependency chain engine. It's not a normal target. It states: "To create the file `card_portfolio.csv` (the output), you must run the `Update_Portfolio` target." This is how `make Generate_Summary` (which depends on the CSV) automatically triggers the entire ETL process if the CSV file is old or missing. The `@touch` command simply ensures the CSV file exists with a current timestamp after `Update_Portfolio` runs.
+- `Clean`: This target simply uses the `rm -f` command to safely remove all files that were generated by the pipeline (`.csv` files and dynamically fetched `.json` files), leaving the source code intact.
 
 <br>
 
