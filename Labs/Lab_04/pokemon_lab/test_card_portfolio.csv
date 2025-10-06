@@ -1,0 +1,9 @@
+index,card_id,card_name,card_number,set_id,set_name,card_market_value
+111,base1-1,Alakazam,1,base1,Base,56.53
+128,base1-4,Charizard,4,base1,Base,456.65
+134,base1-58,Pikachu,58,base1,Base,3.06
+135,base1-58,Pikachu,58,base1,Base,3.06
+011,base1-1,Alakazam,1,base1,Base,56.53
+028,base1-4,Charizard,4,base1,Base,456.65
+034,base1-58,Pikachu,58,base1,Base,3.06
+035,base1-58,Pikachu,58,base1,Base,3.06

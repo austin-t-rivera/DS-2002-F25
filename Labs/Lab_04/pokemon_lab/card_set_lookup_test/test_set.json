@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "id": "base1-1",
+      "name": "Alakazam",
+      "number": "1",
+      "set": { "id": "base1", "name": "Base Set" },
+      "tcgplayer": { "prices": { "holofoil": { "market": 65.50 } } }
+    },
+    {
+      "id": "base1-4",
+      "name": "Charizard",
+      "number": "4",
+      "set": { "id": "base1", "name": "Base Set" },
+      "tcgplayer": { "prices": { "holofoil": { "market": 250.75 } } }
+    },
+    {
+      "id": "base1-58",
+      "name": "Pikachu",
+      "number": "58",
+      "set": { "id": "base1", "name": "Base Set" },
+      "tcgplayer": { "prices": { "normal": { "market": 5.15 } } }
+    },
+    {
+      "id": "base1-4",
+      "name": "Charizard",
+      "number": "4",
+      "set": { "id": "base1", "name": "Base Set" },
+      "tcgplayer": { "prices": { "holofoil": { "market": 250.75 } } }
+    }
+  ]
+}
