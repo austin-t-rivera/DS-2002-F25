@@ -1,6 +1,10 @@
 # Lab 4: Building a Data Pipeline with Bash and Python
 
-**Objective:** In this lab, you will build a robust, multi-stage data pipeline that orchestrates **Bash scripts** (for API calls and file management) and **Python scripts** (for data transformation and reporting) using a central **Makefile**. You will integrate JSON (card details) and CSV (inventory) to create a unified final report.
+### Objective
+In this lab, you will build a robust, multi-stage data pipeline that orchestrates **Bash scripts** (for API calls and file management) and **Python scripts** (for data transformation and reporting) using a central **Makefile**. You will integrate JSON (card details) and CSV (inventory) to create a unified final report.
+
+### Scenario
+Building off of what we did in Activity 4, you still want to understand the value of your inheretance, a binder (or two?!) of Pokémon cards from your older cousin Austin! Because you want to simplify and automate this process, you are building an application to track the market prices of your new Pokémon cards.
 
 ---
 
@@ -19,6 +23,8 @@ Before starting the lab, I encourage you to spend a few minutes exploring the da
 <br>
 
 ---
+
+<br>
 
 ## Step 0. Setup 
 
@@ -102,13 +108,15 @@ Pikachu,base1,58,0,3,5
 
 ---
 
+<br>
+
 ## Step 1: Bash Scripts for API and File Management
 Create these files in the root directory (`pokemon_lab/`) and remember to make them executable: `chmod +x <filename>`.
 
 <br>
 
 ### Scenario
-Building off of what we did in Activity 4, you still want to understand the value of your inheretance, a binder (or two?!) of Pokémon cards from your older cousin Austin! Because you want to simplify and automate this process, you are building an application to track the market prices of your new Pokémon cards. Your first task is to create a reliable and repeatable data pipeline that can pull card data from an API, process it, and output the results to a CSV file.
+Using the test data, you start building your pipeline by first writing a couple of scripts that make it easy for you to grab all of the card data for each Pokemon set. The first one you create will be more manual in that it prompts you, the user to specify which set of cards you want to query through the API.
 
 <br>
 
@@ -125,6 +133,11 @@ fi
 ```
 4.  Use `echo` to provide a helpful output to let the user know we are fetching the data. Must use the `$SET_ID` variable in your message.
 5.  Use `curl` and the `"$SET_ID"` to call the Pokemon TCG API, grabbing all the cards for our specified set and outputting it into the `card_set_lookup` directory as a JSON named exclusively by the `$SET_ID`.
+
+<br>
+
+### Scenario
+Now that you have a working script to grab any set of cards you want, you realize that because market values for the cards may change from day to day, you want to be able to refresh the data on a whim without manually calling the API for each set. So you create a bash script that does exactly that! It looks into your `card_set_lookup/` directory and refreshes any card sets that are in there! This gets you one step closer to a robust pipeline that not only allows you to add data, but to keep it up-to-date on a whim!
 
 <br>
 
@@ -145,9 +158,23 @@ This script loops through all existing JSON files in the lookup directory and re
 
 ---
 
-## Step 2: Python Script for Data ETL - `update_portfolio.py`
+<br>
 
+## Step 2: Python Script for Data ETL - `update_portfolio.py`
 This script handles the full **Extract, Transform, and Load (ETL)** data pipeline: loading card details (JSON) and inventory (CSV), merging them, performing calculations, and outputting the final portfolio CSV.
+
+<br>
+
+### Scenario
+Since you have developed a means for grabbing the raw data from the API, you need to create a script that can clean it and pull out only the data that you care about, in this case, those market prices from TCG Player so that you can determine the value of your inheritance! Still using the test data, you can develop this script to:
+- Grab the `id`, `name`, `number`, `set.id`, `set.name`, and `tcgplayer.prices...market` for both the `holofoil` and `normal` cards in each set.
+- Rename them as readable columns `card_id`, `card_name`, `card_number`, `set_id`, `set_name`, `card_market_value`.
+- Return an aggregated dataframe of all the cards across all sets of data that you have.
+- Grab the data you manually collected by looking through the cards in your inventory, and using the `set_id` and `card_number` to create a card_id that you can use to reference the lookup data.
+- Use the two dataframes you just created to create a final third dataframe with the the market prices and other information of interest.
+- Export that data to a csv.
+
+<br>
 
 ### NOTE about the Underscore Prefix
 The underscore prefix (`_`) before a function name in Python, like in `_load_lookup_data`, is a convention to indicate that the function is intended for **internal use** within the current module. It signals that this is a "helper" or "private" function and should not be called directly, promoting a cleaner public interface.
@@ -233,8 +260,15 @@ The script now uses defined public functions to clearly define the file paths an
 
 ---
 
+<br>
+
 ## Step 3: Python Script for Data Reporting - `generate_summary.py`
 This script is purely a **reporting tool**. Its job is to ingest the single, final output file from the ETL pipeline and present key aggregated insights to the user.
+
+<br>
+
+### Scenario
+In the last script, you were able to take the data you had obtained from JSONs and CSVs to work with dataframes and create a new CSV with the information you were looking for! So the next thing you want to do is make a quick simple script to print out the results. Specifically, we will be looking to identify the most valuable card and it's market price, as well as the total market value of your entire inheretance!
 
 <br>
 
@@ -278,6 +312,13 @@ The script now uses defined public functions (`main()` and `test()`) to clearly 
 
 ---
 
+<br>
+
+### Scenario
+Now that you have working scripts that grab the data that you want, let's start to producitonalize this so we create an actual pipeline that runs by running a single script to run the other python scripts.
+
+<br>
+
 ## Step 4: One Python File to Rule Them All - `pipeline.py`
 
 This script is the **master orchestration file** for the entire data workflow. Its sole purpose is to import and sequentially call the production functions from the two main components of your system: `update_portfolio.py` (the ETL step) and `generate_summary.py` (the reporting step). By centralizing the execution flow here, the `Makefile` becomes much simpler.
@@ -306,6 +347,12 @@ This script is the **master orchestration file** for the entire data workflow. I
 
 ---
 
+<br>
+
+### Scenario
+Last but not least, to fully finish our pipeline we are going to create a Makefile that will call upon both the bash scripts we created and the main pipeline Python script so that we can just run `make all` and run everything!
+
+<br>
 ## Step 5: Orchestration with Makefile
 The `Makefile` serves as the control center for the entire project, managing dependencies and providing a simple, consistent interface for running complex, multi-step tasks.
 
@@ -427,28 +474,36 @@ Explanation:
 
 ---
 
-## Step 5: Running the Pipeline
-Use the Makefile targets to operate your new data pipeline.
+<br>
 
-1.  **Test the Pipeline**: Run the Test target to ensure your scripts work with the minimal test data.
+## Step 6: Running the Pipeline and Saving the Outputs
+Use the Makefile targets to operate your new data pipeline. After running each Make target, you will be saving the output to your command line into a .txt file
+
+1.  Ensure you have downloaded both Binder_1.csv and Binder_2.csv from Canvas.
+
+2.  Create a file called `pokemon_output.txt` and prepare to copy and paste the output from running your Makefile.
+
+3.  **Test the Pipeline**: Run the Test target to ensure your scripts work with the minimal test data.
 ```
 make Test
 ```
 
-2.  **Add Real Data**: Run the Add_Set target and provide the set IDs for the sets in your inventory (e.g., base1, base4).
+4.  Copy the output into `pokemon_output.txt`.
+
+
+5.  **Add Real Data**: Run the Add_Set target and provide the set IDs for the sets in your inventory (i.e. base1, base4).
 ```
 make Add_Set
 ```
 
-3.  **Run the Full Pipeline**: Run the all target. It will execute the full ETL process and print the final summary.
+6.  Copy the output into `pokemon_output.txt`.
+
+7.  **Run the Full Pipeline**: Run the all target. It will execute the full ETL process and print the final summary. For the prompts, if you have `base1.json` and `base4.json` already in the appropriate directory, you can say "no", but you must say "yes" to add them if they are not there, and you must say "yes" to refresh them, even if you just put them in.
 ```
 make all
 ```
 
-4.  **Clean Up**: Remove all generated files (but keep your scripts and inventory files).
-```
-make Clean
-```
+8.  Copy the output into `pokemon_output.txt`.
 
 ## Step 6: Add, Commit, Push, and Submit on Canvas!
 
