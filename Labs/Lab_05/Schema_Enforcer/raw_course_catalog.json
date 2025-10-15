@@ -1,0 +1,34 @@
+[
+    {
+        "course_id": "DS2002",
+        "section": "001",
+        "title": "Data Science Systems",
+        "level": 200,
+        "instructors": [
+            {
+                "name": "Austin Rivera",
+                "role": "Primary"
+            },
+            {
+                "name": "Heywood Williams-Tracy",
+                "role": "TA"
+            }
+        ]
+    },
+    {
+        "course_id": "PHIL2820",
+        "section": "001",
+        "title": "Philosophy of Health and Health Care",
+        "level": 200,
+        "instructors": [
+            {
+                "name": "Elizabeth Barnes",
+                "role": "Primary"
+            },
+            {
+                "name": "Charles Oswald",
+                "role": "TA"
+            }
+        ]
+    }
+]
