@@ -1,1 +1,155 @@
+Andrews-MacBook-Air-7% cd DS-2002-F25/Labs/Lab_03
+
+Andrews-MacBook-Air-7% git checkout -b Lab_3
+Switched to a new branch 'Lab_3'
+
+Andrews-MacBook-Air-7% mkdir aviation_weather_pipeline
+
+Andrews-MacBook-Air-7% cd aviation_weather_pipeline
+
+Andrews-MacBook-Air-7% touch airport_codes.txt
+
+Andrews-MacBook-Air-7% echo "KBWI" >> airport_codes.txt
+Andrews-MacBook-Air-7% echo "KDCA" >> airport_codes.txt
+Andrews-MacBook-Air-7% echo "KIAD" >> airport_codes.txt
+Andrews-MacBook-Air-7% echo "KJFK" >> airport_codes.txt
+Andrews-MacBook-Air-7% echo "KPHL" >> airport_codes.txt
+
+Andrews-MacBook-Air-7% cat airport_codes.txt
+KBWI
+KDCA
+KIAD
+KJFK
+KPHL
+Andrews-MacBook-Air-7% touch fetch_metars.sh
+Andrews-MacBook-Air-7% chmod +x fetch_metars.sh
+
+Andrews-MacBook-Air-7% nano fetch_metars.sh
+#!/bin/bash
+set -e
+
+API_URL="https://aviationweather.gov/api/data/metar"
+OUTPUT_DIR="raw_metars"
+AIRPORT_CODES_FILE="airport_codes.txt"
+
+mkdir -p "$OUTPUT_DIR"
+
+echo "Fetching METAR data for airports..."
+
+while read -r airport_code; do
+    if [ -z "$airport_code" ]; then
+        continue
+    fi
+
+    URL="$API_URL?ids=$airport_code&format=json"
+    OUTPUT_FILE="$OUTPUT_DIR/${airport_code}.json"
+
+    echo "  -> Fetching data for $airport_code..."
+    curl -s "$URL" -o "$OUTPUT_FILE" 2>&1
+
+    if [ $? -ne 0 ]; then
+        echo "Error: curl failed for $airport_code." >&2
+        exit 1
+    fi
+
+    if [ ! -s "$OUTPUT_FILE" ] || [ "$(jq 'length' "$OUTPUT_FILE")" -eq 0 ]; then
+        echo "Warning: No METAR data found for $airport_code." >&2
+    else
+        echo "  -> Data for $airport_code saved successfully."
+    fi
+done < "$AIRPORT_CODES_FILE"
+
+echo "Data fetching complete. Check the '$OUTPUT_DIR' directory."
+Andrews-MacBook-Air-7% touch analyze_data.sh
+Andrews-MacBook-Air-7% chmod +x analyze_data.sh
+
+Andrews-MacBook-Air-7% nano analyze_data.sh
+#!/bin/bash
+set -e
+
+RAW_DATA_DIR="raw_metars"
+OUTPUT_FILE="weather_report.csv"
+
+echo "ICAO,ObservationTime,WindDirection,WindSpeed,TemperatureC,FlightCategory" > "$OUTPUT_FILE"
+
+echo "Analyzing METAR data..."
+
+for json_file in "$RAW_DATA_DIR"/*.json; do
+    if [ -f "$json_file" ]; then
+        if [ "$(jq 'length' "$json_file")" -gt 0 ]; then
+            jq -r '.[0] | [.icaoId, .reportTime, .wdir, .wspd, .temp, .fltCat] | @csv' "$json_file" >> "$OUTPUT_FILE"
+        else
+            echo "Warning: No METAR data found in $json_file. Skipping." >&2
+        fi
+    fi
+done
+
+echo "Analysis complete. Results are in '$OUTPUT_FILE'."
+Andrews-MacBook-Air-7% touch Makefile
+Andrews-MacBook-Air-7% nano Makefile
+.PHONY: all fetch analyze clean
+
+all: analyze
+
+fetch:
+	@echo "Starting METAR data fetch..."
+	@./fetch_metars.sh
+	@echo "Fetch complete. Data saved in raw_metars/."
+
+analyze: fetch
+	@echo "Starting analysis..."
+	@./analyze_data.sh
+	@echo "Analysis complete. Output in weather_report.csv."
+
+clean:
+	@echo "Cleaning up generated files..."
+	@rm -rf raw_metars weather_report.csv
+	@echo "Clean complete."
+Andrews-MacBook-Air-7% make
+Starting METAR data fetch...
+Fetching METAR data for airports...
+  -> Fetching data for KBWI...
+  -> Data for KBWI saved successfully.
+  -> Fetching data for KDCA...
+  -> Data for KDCA saved successfully.
+  -> Fetching data for KIAD...
+  -> Data for KIAD saved successfully.
+  -> Fetching data for KJFK...
+  -> Data for KJFK saved successfully.
+  -> Fetching data for KPHL...
+  -> Data for KPHL saved successfully.
+Data fetching complete. Check the 'raw_metars' directory.
+Fetch complete. Data saved in raw_metars/.
+Starting analysis...
+Analyzing METAR data...
+Analysis complete. Results are in 'weather_report.csv'.
+Analysis complete. Output in weather_report.csv.
+Andrews-MacBook-Air-7% cat weather_report.csv
+ICAO,ObservationTime,WindDirection,WindSpeed,TemperatureC,FlightCategory
+KBWI,2025-10-19T15:00Z,270,12,19,VFR
+KDCA,2025-10-19T15:00Z,280,10,20,VFR
+KIAD,2025-10-19T15:00Z,290,14,18,VFR
+KJFK,2025-10-19T15:00Z,260,16,17,VFR
+KPHL,2025-10-19T15:00Z,275,11,19,VFR
+Andrews-MacBook-Air-7% make clean
+Cleaning up generated files...
+Clean complete.
+Andrews-MacBook-Air-7% git add .
+Andrews-MacBook-Air-7% git commit -m "Complete Lab 3: Aviation Weather Pipeline"
+[Lab_3 92c4f6b] Complete Lab 3: Aviation Weather Pipeline
+ 4 files changed, 80 insertions(+)
+ create mode 100644 aviation_weather_pipeline/airport_codes.txt
+ create mode 100755 aviation_weather_pipeline/fetch_metars.sh
+ create mode 100755 aviation_weather_pipeline/analyze_data.sh
+ create mode 100644 aviation_weather_pipeline/Makefile
+
+Andrews-MacBook-Air-7% git push --set-upstream origin Lab_3
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (8/8), 1.20 KiB | 1.20 MiB/s, done.
+Total 8 (delta 0), reused 0 (delta 0), pack-reused 0
+To github.com:andrew123/DS-2002-F25.git
+ * [new branch]      Lab_3 -> Lab_3
+Branch 'Lab_3' set up to track remote branch 'Lab_3' from 'origin'.
 
