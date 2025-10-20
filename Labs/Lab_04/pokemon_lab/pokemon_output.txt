@@ -1,0 +1,47 @@
+====================
+  Test Run Output
+====================
+--- Running Test Pipeline (Built-in Test Modes) ---
+# 1. Run the update script (triggers test() function by default)
+🔍 Starting ETL pipeline in TEST mode...
+✅ Portfolio written to test_card_portfolio.csv
+# 2. Run the summary script (triggers test() function by default)
+Running Summary in TEST mode...
+
+📊 Portfolio Summary Report
+----------------------------------------
+Total Portfolio Value: $326.55
+Most Valuable Card:
+   - Name: Charizard
+   - ID: base0-4
+   - Market Value: $250.75
+----------------------------------------
+Test complete.
+
+====================
+  Add Set Output
+====================
+--- Adding New Card Set ---
+Enter TCG Card Set ID (e.g., base1, base4): base1
+Fetching card data for set ID: base1...
+Card data for 'base1' saved to card_set_lookup/base1.json
+--- Adding New Card Set ---
+Enter TCG Card Set ID (e.g., base1, base4): base4
+Fetching card data for set ID: base4...
+Card data for 'base4' saved to card_set_lookup/base4.json
+
+✅ Portfolio written to card_portfolio.csv
+Generating summary report...
+
+====================
+  Full Pipeline Output
+====================
+📊 Portfolio Summary Report
+----------------------------------------
+Total Portfolio Value: $1,866.85
+Most Valuable Card:
+   - Name: Charizard
+   - ID: base4-4
+   - Market Value: $304.88
+----------------------------------------
+Pipeline execution complete.
