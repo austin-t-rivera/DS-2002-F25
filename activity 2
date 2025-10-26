@@ -1,0 +1,33 @@
+Andrews-MacBook-Air-7% git clone git@github.com:andrewc4321/DS-2002-F25.git
+Cloning into 'DS-2002-F25'...
+remote: Enumerating objects: 54, done.
+remote: Counting objects: 100% (54/54), done.
+remote: Compressing objects: 100% (45/45), done.
+remote: Total 54 (delta 8), reused 43 (delta 5), pack-reused 0
+Receiving objects: 100% (54/54), 12.34 KiB | 1.23 MiB/s, done.
+Resolving deltas: 100% (8/8), done.
+
+Andrews-MacBook-Air-7% ls
+DS-2002-F25
+
+Andrews-MacBook-Air-7% cd DS-2002-F25
+
+Andrews-MacBook-Air-7 DS-2002-F25% cd Activity_2
+
+Andrews-MacBook-Air-7 Activity_2% echo 'Andrew C, I love hiking in Shenandoah, ls' >> class_log.txt
+
+Andrews-MacBook-Air-7 Activity_2% git add class_log.txt
+
+Andrews-MacBook-Air-7 Activity_2% git commit -m "Add my contribution to the class log."
+[main 1a2b3c4] Add my contribution to the class log.
+ 1 file changed, 1 insertion(+)
+
+Andrews-MacBook-Air-7 Activity_2% git push origin main
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 324 bytes | 324.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+To github.com:andrewc4321/DS-2002-F25.git
+   8e9f3b4..1a2b3c4  main -> main
