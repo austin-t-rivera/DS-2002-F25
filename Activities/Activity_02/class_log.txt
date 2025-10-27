@@ -57,3 +57,4 @@ Araceli Soto, born abroad, echo
 Pranav Vaddepalli, I like to play ping pong, grep
 Aaron Storozuk, I have a dog (Xena) and two cats (Zelda & Link), mkdir
 Nithya Gopal, I can play clarinet and piano, cd
+Alison Miller, I enjoy sailing, pwd
