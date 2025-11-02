@@ -29,7 +29,7 @@ You use the AWS SDK for Python (Boto3) to create, configure, and manage AWS serv
 
 ---
 
-## Step 0. Setup
+## Part 0. Setup
 Because Codespace does not seem to support `awscli` for AWS Academy, only for full access accounts, we will not be able to utilize Codespace for this lab. This will require you to ensure that you update your locally cloned fork of DS-2002-F25. This can come with some hiccups along the way, but I encourage all of you to persist and get it running!
 
 <br>
@@ -77,18 +77,25 @@ mkdir s3_bucket_lab && cd s3_bucket_lab
 
 ### Start up your AWS Academy Sandbox, Console, and Find your Credentials
 1. Go to our [Cloud Foundations course](https://awsacademy.instructure.com/courses/144192) in AWS Academy.
+
 2. Click into `Modules` and then into the `Sandbox` module.
 <img width="1038" height="619" alt="image" src="https://github.com/user-attachments/assets/31ba5d9c-b864-45fb-b8d5-51f3409c5bfa" />
+
 3. Click the thing that says to load it in a new window, which will open Vocareum.
 <img width="1536" height="401" alt="image" src="https://github.com/user-attachments/assets/6d62385e-b704-4795-bffa-e7beeab5e7b6" />
+
 4. You should now see the following:
 <img width="1920" height="467" alt="image" src="https://github.com/user-attachments/assets/263becb1-aab1-4fe2-9831-d83af69a92c7" />
+
 5. Click on "Start Lab". **This will bring up a popup window that you will wait until it tells you the lab is started before hitting "X" to exit the popup window.**
 <img width="159" height="83" alt="image" src="https://github.com/user-attachments/assets/937bc18b-726d-4d02-9f23-04fc55414761" />
+
 6. Click on "AWS" to open the AWS Console in another tab. **We will use this later.**
 <img width="128" height="92" alt="image" src="https://github.com/user-attachments/assets/afacb3e0-d6ca-4bc9-8aac-89833e620513" />
+
 7. Back in Vocareum, click on "Details", which will **show you the AWS Credentials for ONLY THIS LAB SESSION. You will need to update credentials if you stop the lab or if the time expires.**
 <img width="1920" height="1063" alt="image" src="https://github.com/user-attachments/assets/4ed6448f-e22d-4fa2-bb57-cabaa0cc8833" />
+
 8. Only for "AWS CLI" click on "Show" and follow the next steps to copy all of what it shows you into the correct AWS `credentials` file.
 <img width="2305" height="1274" alt="image" src="https://github.com/user-attachments/assets/bd09ff61-5b33-4a69-bc5a-ed71140aaa55" />
 
@@ -110,32 +117,19 @@ output = json
 ```
 aws s3 ls
 ```
+8. If you get an error, head to "Troubleshooting Setup" below. If you get either nothing or a list of buckets, you are all set!
 
-If you get an error, you need to fix something in your setup, if you do not see any output, or you see output from a lab in the Cloud Foundations course, you are all set!
+<br>
 
+### Troubleshooting Setup
+-  If you get this error: `An error occurred (ExpiredToken) when calling the ListBuckets operation: The provided token has expired.`, it means your Lab Session was either stopped or it expired, meaning you just need to start up your Sandbox Lab again and copy and paste in the new credentials into `~/.aws/credentials`, but no need to do anything to `~/.aws/config`.
+-  If you get any other error, it means you have not set this up properly. Read back through the instructions and try them again, if the issue persists, please come to office hours.
 
+<br>
 
 ---
 
-## Part 1: Acquisition and Flexible Formatting
-To keep the lab a reasonable length, there are only three (3) parts that are required and that count for credit, however, I have provided instructions for one optional part that is not for credit, but for your own exploration if you are interested.
-
-Follow all the steps below for practice working with the S3 service in Amazon Web Services. Among several other tasks you will write two scripts for this lab. If you have not already, [update your fork of DS-2002-Spr25](https://github.com/austin-t-rivera/DS-2002-Spr25/blob/lab_7_s3/README.md).
-
-Within the `mywork` directory, create a directory called `Lab_7`, this is where you will be putting the scripts that you will write. Within that directory commit the two scripts (as two separate files) you write for this lab. Paste the URL to your GitHub repository in Canvas for grading.
-
-This lab requires that you have a working Python3 environment and both the AWS CLI tool (with access keys configured) and Python3 / `boto3` installed. If you are using the AWS Academy Learner Lab, start the Learner Lab and then copy your AWS credentials into `~/.aws/credentials` on your local machine. Remember these credentials expire after 4 hours.
-
-Installations:
-- Follow this guide to download and install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html):
- 
-- `boto3` - is a simple `pip` command in your terminal:
-  
-    ```bash
-    python3 -m pip install boto3
-    ```
-
-## Objectives
+## Objectives and Preamble
 
 In this lab you will:
 
@@ -149,20 +143,25 @@ In this lab you will:
 8. Upload a file and delete it.
 9. Finally, write Python3 snippets using the `boto3` library to upload a private file, a public file, and to presign an object in S3.
 
-## S3 Security and HTTP Access by URL
+### S3 Security and HTTP Access by URL
 
 S3 buckets are PRIVATE by default. No files/objects uploaded to a plain, unaltered bucket are ever publicly-accessible. In this lab you will learn more about public/private buckets and objects.
 
 AWS operates many `regions` of infrastructure around the world. We will be using the `us-east-1` region, the first and one of their largest regions. To get the web URL to any public file in `us-east-1` this is the syntax:
-
 ```
 https://s3.amazonaws.com/ + BUCKET_NAME + / file/path.sfx
 ```
+
 For example, this URL is to a publicly-accessible file within a publicly-accessible bucket:
 [`https://s3.amazonaws.com/ds2002-resources/vuelta.jpg`](https://s3.amazonaws.com/ds2002-resources/vuelta.jpg)
 
+<br>
 
-## Create and Configure an S3 Bucket
+---
+
+## Part 1 (Instructional): Create and Configure an S3 Bucket, Then Load a File
+
+This part is just instructional and can be done either from your local
 
 1. From either the VS Code or your local terminal, list any existing buckets (there should be none):
 
@@ -170,10 +169,10 @@ For example, this URL is to a publicly-accessible file within a publicly-accessi
     aws s3 ls
     ```
 
-2. Create a new bucket using the `mb` S3 subcommand. Add your computing ID to the name of the bucket, i.e. `ds2002-atr8ec` and so on. Note the use of the `s3://` protocol before the bucket name.
+2. Create a new bucket using the `mb` S3 subcommand. Add **your computing ID** to the name of the bucket, i.e. `ds2002-f25-atr8ec` and so on. Note the use of the `s3://` protocol before the bucket name.
 
     ```
-    aws s3 mb s3://ds2002-atr8ec
+    aws s3 mb s3://ds2002-f25-atr8ec
     ```
 
 3. Grab an image file. Using the `curl` command below you can retrieve any image from the Internet you want to use for this lab. Once you have the URL copied for the image, use this command syntax:
@@ -181,7 +180,7 @@ For example, this URL is to a publicly-accessible file within a publicly-accessi
     ```
     curl URL > file
     ```
-    For example, to fetch the Google logo. You can output the image to a new file name.
+    For example, to fetch the [Google logo](https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png). You can output the image to a new file name.
     ```
     curl https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png > google_logo.png
     ```
@@ -191,28 +190,28 @@ For example, this URL is to a publicly-accessible file within a publicly-accessi
     aws s3 cp FILE s3://BUCKET/
     ```
 
-    For example, to upload the google logo:
+    For example, to upload the Google logo:
 
     ```
-    aws s3 cp google_logo.png s3://ds2002-atr8ec/
+    aws s3 cp google_logo.png s3://ds2002-f25-atr8ec/
     ```
 
 5. Go ahead and upload your file. List the contents of your bucket to verify it is there. Notice it is the same `ls` command, but specifying the bucket to list the contents of:
 
     ```
-    aws s3 ls s3://ds2002-atr8ec/
+    aws s3 ls s3://ds2002-f25-atr8ec/
     ```
     which should return something like:
     ```
-    $ aws s3 ls s3://ds2002-atr8ec/
-    2024-02-19 08:13:49     309510 vuelta.jpg
+    $ aws s3 ls s3://ds2002-f25-atr8ec/
+    2025-11-02 12:59:52      13504 google_logo.png
     ```
 
 6. Take the bucket and file path and assemble a public URL to your file as described at the start of this lab:
     ```
     # https://s3.amazonaws.com/ + BUCKET_NAME + / FILE_PATH
     
-    https://s3.amazonaws.com/ds2002-atr8ec/vuelta.jpg
+    https://s3.amazonaws.com/ds2002-f25-atr8ec/google_logo.png
     ```
     Test that URL using your web browser. What do you see?
 
@@ -220,7 +219,7 @@ For example, this URL is to a publicly-accessible file within a publicly-accessi
 
     The syntax for the command is:
     ```
-    aws s3 presign --expires-in 30 s3://ds2002-atr8ec/vuelta.jpg
+    aws s3 presign --expires-in 30 s3://ds2002-f25-atr8ec/google_logo.png
 
     # The --expires-in flag is how many seconds the file should be public.
     # The s3:// is the BUCKET+FILE path to your specific file.
@@ -229,7 +228,7 @@ For example, this URL is to a publicly-accessible file within a publicly-accessi
     Once you issue this command, it will return a long URL with signature:
     
     ```
-    https://s3.amazonaws.com/ds2002-atr8ec/pdfs/json-overview.pdf?AWSAccessKeyId=AKIAJLBYZFLFQQT256OQ&Signature=cjcY98KLjZ6CXbTnaZ9Srt8MQVM%3D&Expires=1708376373
+    https://ds2002-f25-atr8ec.s3.us-east-1.amazonaws.com/google_logo.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIARSH3E2VEKJX3JBMC%2F20251102%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251102T210238Z&X-Amz-Expires=30&X-Amz-SignedHeaders=host&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEIX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJIMEYCIQDmBfzwoH44VZFLB36ehfW9ImIZPciBXrHt8EvGwq%2Fc%2BgIhAMbcaZeFeY35x7fYnO85TTs1ittKv4yjJ8h31PPaF34IKqcCCE4QARoMMTA3OTAwODg0Mjk2IgwNNPWmrIkh5LdhWU0qhALcpI2TTYpPQtb%2BFYpBFP5DS6Zc8ynJ7mOt86X47XXySOtCIwK8BXK1zdZpLM9fwSOwzO9whyBjQle8jlYYikKwZNFzUVNkp4sLe4Jp8h8YZQdMHiYCehdWPtQ9n%2Blo45D5phvMEC06%2FEYf082f2ehhlkImYhwjljI10Kptj9Cf2NnyVRzWVXciQHt0U%2F8A%2BU8yIoiMa%2BYPqlW1if2YJgbdQMAmbJt2ebsP7pr2ryJdnU7xkTXUiqIRwRrtaqo9F1Fwmb221qBOjC6Nb%2Fg6KI7Ch%2BJg9I1zzsuy1HH%2BVGYJLKjG%2FetF0FnOTGTnjyxWsNijwlZQPqsQM8nLHqLJzNtHBjhA6DDohJ%2FIBjqcAVKtZdqqcdZs%2BhMQrdbIw3zQj7nUBYhNuzJhy3%2FNt0Bs6gA8kIK2j%2Fj7Ho75pYIVOlCQOOqHG36JIi9s76sKLJ47fHrmDfBE5FT%2BI4rBFouIGUZL6Cd5MpuzzkyOg4WsWg%2FeGIfVbMA4Qasb87QXVKzrVjFtbSHlm%2FBW7mVTxdPDiUotrI3MAABJY2CWij%2FjDDbGWw7PBWrzo8JVTA%3D%3D&X-Amz-Signature=a5ff8bb7b28d20221c0cf3ca8791da197310e917d8ca064731345d7daceff242
     ```
     
     Open that link in a browser - you should be able to see your file.
@@ -267,13 +266,13 @@ For example, this URL is to a publicly-accessible file within a publicly-accessi
 
     For example:
     ```
-    aws s3 cp --acl public-read vuelta.jpg s3://ds2002-atr8ec/
+    aws s3 cp --acl public-read vuelta.jpg s3://ds2002-f25-atr8ec/
     ```
 
 11. Test access
 
     Using the `bucket/file` path structure, construct the URL for your file like this: 
-    [`https://s3.amazonaws.com/ds2002-atr8ec/vuelta.jpg`](https://s3.amazonaws.com/ds2002-atr8ec/vuelta.jpg)
+    [`https://s3.amazonaws.com/ds2002-f25-atr8ec/vuelta.jpg`](https://s3.amazonaws.com/ds2002-f25-atr8ec/vuelta.jpg)
 
 12. Delete a file in your bucket. Using the AWS CLI, upload another image file to the bucket. List the bucket contents to confirm it has been uploaded. And, finallly, delete the file using this syntax:
 
@@ -282,11 +281,11 @@ For example, this URL is to a publicly-accessible file within a publicly-accessi
     ```
     For example
     ```
-    aws s3 rm s3://ds2002-atr8ec/vuelta.jpg
+    aws s3 rm s3://ds2002-f25-atr8ec/vuelta.jpg
     ```
     And confirm the file has been deleted:
     ```
-    aws s3 ls s3://ds2002-atr8ec/
+    aws s3 ls s3://ds2002-f25-atr8ec/
     ```
 
 13. To empty a bucket completely, a `--recursive` option is available:
@@ -369,7 +368,7 @@ The following tasks assume you are able to import `boto3` successfully.
 4. To upload a file to your bucket:
 
     ```
-    bucket = 'ds2002-atr8ec'
+    bucket = 'ds2002-f25-atr8ec'
     local_file = 'project/vuelta.jpg'
 
     resp = s3.put_object(
@@ -449,7 +448,7 @@ As a web-enabled storage service, S3 buckets can also serve web content includin
 
 7. Save your changes to the policy. Switch to the "Properties" tab for your bucket and scroll to the bottom.
 8. Edit the Static Website Hosting section. For the index document enter `index.html` and for the error document enter `error.html`
-9. Save your changes. The page will refresh and you will see a website URL appear, something like http://ds2002-atr8ec.s3-website-us-east-1.amazonaws.com/
+9. Save your changes. The page will refresh and you will see a website URL appear, something like http://ds2002-f25-atr8ec.s3-website-us-east-1.amazonaws.com/
 10. To test your site, upload a sample HTML file named `index.html` to your bucket. Here is such a file: https://s3.amazonaws.com/ds2002-resources/labs/lab4/index.html
 
     ```
