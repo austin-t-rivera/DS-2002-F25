@@ -1,4 +1,124 @@
-# Lab 8: S3 Storage
+# Lab 8: Amazon Simple Storage Service (S3)
+
+---
+
+<img width="1000" height="97" alt="image" src="https://github.com/user-attachments/assets/e5898d54-3fce-4448-b8e9-f9765e34de9f" />
+
+<img width="271" height="97" alt="image" src="https://github.com/user-attachments/assets/0c09151e-cc47-47ba-8bac-d18265ab4fbc" />
+<img width="385" height="97" alt="image" src="https://github.com/user-attachments/assets/e56e4000-dd7a-4d84-a081-e43764491052" />
+<img width="335" height="97" alt="image" src="https://github.com/user-attachments/assets/3b0c39de-603a-45a8-a8cd-b701675dd974" />
+
+<br>
+
+---
+
+Welcome to Lab 8 of the DS-2002 course! This lab will take you through the fundamentals of the three ways in which you can interact with S3:
+
+## AWS CLI
+The AWS Command Line Interface (AWS CLI) is a unified tool to manage your AWS services. With just one tool to download and configure, you can control multiple AWS services from the command line and automate them through scripts.
+
+We will be accessing the AWS CLI in both our local environments and through the Sandbox Vocareum platform connected to our AWS Academy course.
+
+## AWS Console
+Everything you need to access and manage the AWS Cloud — in one web interface.
+
+## boto3
+You use the AWS SDK for Python (Boto3) to create, configure, and manage AWS services, such as Amazon Elastic Compute Cloud (Amazon EC2) and Amazon Simple Storage Service (Amazon S3). The SDK provides an object-oriented API as well as low-level access to AWS services.
+
+<br>
+
+---
+
+## Step 0. Setup
+Because Codespace does not seem to support `awscli` for AWS Academy, only for full access accounts, we will not be able to utilize Codespace for this lab. This will require you to ensure that you update your locally cloned fork of DS-2002-F25. This can come with some hiccups along the way, but I encourage all of you to persist and get it running!
+
+<br>
+
+### Install `awscli` and `boto3`
+
+Complete both of the following within either Git Bash (Windows) or Terminal (macOS):
+
+- `awscli` - Follow this guide to download and install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+ 
+- `boto3` - is a simple `pip` command in your terminal:
+```bash
+python3 -m pip install boto3
+```
+
+<br>
+
+### Navigate to your `DS-2002-F25` directory, update your `main` branch, and setup the `Lab_8` branch.
+1. Open your Git Bash (Windows) or Terminal (macOS).
+
+2. Navigate to your `DS-2002-F25` directory. For example: `cd ~/Documents/GitHub/DS-2002-F25/` (yours may differ)
+
+3. Switch to your `main` branch `git checkout main`.
+
+4. Make sure that you do not have any unstaged or uncommitted stages by running `git status`. Add and commit any changes if there are some lingering.
+
+5. Run `git remote -v`:
+   - If your upstream lists my repo `austin-t-rivera/DS-2002-F25.git` and your origin list your repo `<your-github-id>/DS-2002-F25.git`, proceed to step 6.
+   - If your upstream lists your repo or does not exist, set my repo by running `git remote add upstream git@github.com:austin-t-rivera/DS-2002-F25.git` and continue in step 5.
+     - Run `git fetch upstream` and continue in step 5.
+     - Run `git merge upstream/main main` and proceed to step 6.
+
+6. Run the `update_repo.sh` file to update just your `main` branch.
+
+7. Use `cd` to navigate to your `/Labs/Lab_08/` directory.
+
+9. Create and move into a new branch called `Lab_8` by running `git checkout -b Lab_8`.
+
+10. Create a new directory for this project, within the `Labs/Lab_08/` directory, and navigate into it:
+```bash
+mkdir s3_bucket_lab && cd s3_bucket_lab
+```
+
+<br>
+
+### Start up your AWS Academy Sandbox, Console, and Find your Credentials
+1. Go to our [Cloud Foundations course](https://awsacademy.instructure.com/courses/144192) in AWS Academy.
+2. Click into `Modules` and then into the `Sandbox` module.
+<img width="1038" height="619" alt="image" src="https://github.com/user-attachments/assets/31ba5d9c-b864-45fb-b8d5-51f3409c5bfa" />
+3. Click the thing that says to load it in a new window, which will open Vocareum.
+<img width="1536" height="401" alt="image" src="https://github.com/user-attachments/assets/6d62385e-b704-4795-bffa-e7beeab5e7b6" />
+4. You should now see the following:
+<img width="1920" height="467" alt="image" src="https://github.com/user-attachments/assets/263becb1-aab1-4fe2-9831-d83af69a92c7" />
+5. Click on "Start Lab". **This will bring up a popup window that you will wait until it tells you the lab is started before hitting "X" to exit the popup window.**
+<img width="159" height="83" alt="image" src="https://github.com/user-attachments/assets/937bc18b-726d-4d02-9f23-04fc55414761" />
+6. Click on "AWS" to open the AWS Console in another tab. **We will use this later.**
+<img width="128" height="92" alt="image" src="https://github.com/user-attachments/assets/afacb3e0-d6ca-4bc9-8aac-89833e620513" />
+7. Back in Vocareum, click on "Details", which will **show you the AWS Credentials for ONLY THIS LAB SESSION. You will need to update credentials if you stop the lab or if the time expires.**
+<img width="1920" height="1063" alt="image" src="https://github.com/user-attachments/assets/4ed6448f-e22d-4fa2-bb57-cabaa0cc8833" />
+8. Only for "AWS CLI" click on "Show" and follow the next steps to copy all of what it shows you into the correct AWS `credentials` file.
+<img width="2305" height="1274" alt="image" src="https://github.com/user-attachments/assets/bd09ff61-5b33-4a69-bc5a-ed71140aaa55" />
+
+### Configure your Lab Session Credentials
+When we downloaded and installed AWS CLI, it automatically created a `config` and a `credentials` file within a directory at our root called `.aws/`. We will be copy and pasting the entire set of credentials from the Vocareum into the credentials file.
+
+1. Within your CLI, you should be able to access the print out the contents of the `credentials` file by running `cat ~/.aws/credntials`. It is okay if there is nothing in there at the moment.
+2. Open the `credentials` file in the `nano` editor by running `nano ~/.aws/credntials`. Alternatively, you can navigate into in your Finder/File Explorer and open it in Notepad, VS Code, or whatever.
+3. Delete anything in there and paste your entire set of credentials from Vocareum, including the part that says "[default]".
+4. Save and close it.
+5. Open the `config` file in the `nano` editor by running `nano ~/.aws/config`. Alternatively, you can navigate into in your Finder/File Explorer and open it in Notepad, VS Code, or whatever.
+6. Delete anything in there and paste the following:
+```
+[default]
+region = us-east-1
+output = json
+```
+7. Everything should be set up, so now in your `s3_bucket_lab` directory, run the following to list all buckets in S3:
+```
+aws s3 ls
+```
+
+If you get an error, you need to fix something in your setup, if you do not see any output, or you see output from a lab in the Cloud Foundations course, you are all set!
+
+
+
+---
+
+## Part 1: Acquisition and Flexible Formatting
+To keep the lab a reasonable length, there are only three (3) parts that are required and that count for credit, however, I have provided instructions for one optional part that is not for credit, but for your own exploration if you are interested.
 
 Follow all the steps below for practice working with the S3 service in Amazon Web Services. Among several other tasks you will write two scripts for this lab. If you have not already, [update your fork of DS-2002-Spr25](https://github.com/austin-t-rivera/DS-2002-Spr25/blob/lab_7_s3/README.md).
 
