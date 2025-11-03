@@ -240,7 +240,7 @@ This part is just instructional and should be done within the AWS CLI found in V
 
 ---
 
-## Part 2 (Local Terminal Using AWS CLI): Write a Bash Script
+## Part 2 (Local Terminal Using AWS CLI): Write a Bash Script (1 of 2)
 
 In this part of the lab we are going to switch over to our Git Bash/Terminal to develop our scripts. Sure we could write our scripts in the Vocareum AWS CLI, however, we would need to set up our SSH and clone to that environment, which will just take unnecessary time. If we were not bound by the time limits of the Sandbox, and were working with full AWS accounts, it may be more advantageous to develop in AWS, but not this time.
 
@@ -257,15 +257,15 @@ Given what was covered above, and what we have covered this semester so far, the
 
 ---
 
-## Part 3 (AWS Console): Update Your bucket's ACL (Access Control List)
+## Part 3 (AWS Console) (Instructional): Update Your bucket's ACL (Access Control List)
 
 1. Open the [AWS Management Console](https://console.aws.amazon.com/) to perform this task. Either click the link or "AWS" in Vocareum, either should work so long as you are logged in and the Lab is active.
 2. Within the AWS Management Console, open the S3 service and find your bucket.
 3. Click the name of the bucket to get detailed settings.
 4. Select the Permissions tab within your bucket settings.
-5. Click "Edit" within the Block public access section.
+5. Click "Edit" within the "Block public access (bucket settings)" section.
 6. Uncheck all boxes and save your settings. Confirm the change.
-7. Click "Edit within the Object Ownership section.
+7. Scroll down and click "Edit" within the "Object Ownership" section.
 8. Enable ACLs by checking the right-hand radio button. Confirm your changes by checking the box. Leave "Bucket owner preferred" selected. Save your changes.
 
     These changes have not made your bucket or any of its contents public. However, they have now allowed you the option to specifically make any contents public if you choose to do so. (Without the above changes this would not be possible.)
@@ -312,7 +312,11 @@ Given what was covered above, and what we have covered this semester so far, the
     aws s3 rb s3://BUCKET_NAME
     ```
 
-## Use the `boto3` library with Python3
+<br>
+
+---
+
+## Part 4 (AWS SDK) (Instructional): Use the `boto3` library with Python3
 
 Developers should keep in mind that S3 is a web service, or API, which means that in addition to using the AWS Management Console or CLI tools you can work with any AWS service using the language of your choice.
 
@@ -323,26 +327,27 @@ Complete documentation for `boto3` is available:
 * `boto3` - https://boto3.amazonaws.com/v1/documentation/api/latest/index.html
 * `s3` - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html
 
+<br>
+
 ### 1. Install and Import `boto3`
 
-To work with `boto3` you must first make sure it is installed, so that you can import it. From a terminal:
-
+Should have been completed in Step 0 already, but just in case. To work with `boto3` you must first make sure it is installed, so that you can import it. From a terminal:
 ```
 python3 -m pip install boto3
 ```
-You can confirm that `boto3` is installed if you open a Python3 session and try to import it. A successful `import` should result in no errors/warnings.
-```
-$ python3
-Python 3.7.5 (default, Dec 18 2019, 06:24:58) 
-[GCC 5.5.0 20171010] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> import boto3
->>>
+
+You can confirm that `boto3` is installed if you create a quick `test.py` file with the following code:
+```python
+import boto3
+print("A successful import should result in no errors/warnings above. :)")
 ```
 
-The following tasks assume you are able to import `boto3` successfully.
+You can go ahead and delete the `test.py` file now.
+
+<br>
 
 ### 2. Upload a file to S3 and keep it private
+The following tasks assume you are able to import `boto3` successfully.
 
 1. Each AWS service you connect to via `boto3` needs a `client` or `resource` or some other reusable connection. Let's create a simple client for the S3 service:
 
@@ -357,11 +362,21 @@ The following tasks assume you are able to import `boto3` successfully.
 
 2. Once you have created a client you are now ready to use it. In your command prompt (in a local terminal or VSCode, etc.), upon invoking the `s3` class object you just created, you will notice many new options:
 
+    You can only do this if you are working in a python3 session on the command line, which Git Bash tends to struggle with. So you can run this in the VS Code, maybe Terminal (macOS), if you want to see it or you can just see my screenshot below.
     ```python3
     s3.<TAB>
     ```
+    
+    May need to do:
+    ```python3
+    s3.<TAB><TAB>
+    ```
 
-3. For instance, list all your buckets:
+    My screenshot showing all of the s3 options to choose from:
+   <img width="1660" height="1305" alt="image" src="https://github.com/user-attachments/assets/70569f6e-fc91-42f9-84cb-fa3a4659a69b" />
+
+
+4. For instance, list all your buckets:
 
     ```
     import boto3
@@ -379,27 +394,48 @@ The following tasks assume you are able to import `boto3` successfully.
 
     This will return the name(s) of any bucket(s) in your account in a full JSON payload, with all results nested a single array. Note that above, a variable named `response` was created and populated with the results of the `list_buckets()` method. This is an arbitrary variable name - you can always use your own.
 
-4. To upload a file to your bucket:
+5. To upload a file to your bucket:
 
     ```
+    import boto3
+
+    s3 = boto3.client('s3', region_name="us-east-1")
     bucket = 'ds2002-f25-atr8ec'
     local_file = 'project/vuelta.jpg'
 
-    resp = s3.put_object(
-        Body = local_file,
-        Bucket = bucket,
-        Key = local_file
+    # 1. Open the file in binary read mode ('rb')
+    with open(local_file, 'rb') as data:
+        resp = s3.put_object(
+            Body=data,        # PASS THE OPEN FILE OBJECT HERE
+            Bucket=bucket,
+            Key=local_file    # This is the destination key/path in S3
     )
     ```
 
     Some explanation:
-
       - `bucket` is an S3 bucket that already exists.
       - `local_file` is the path/file you want to upload.
       - `Key` within the `put_object()` method is the destination path you want for the uploaded path.
       - These three parameters are the minimum required for a `put_object` call. There are many other options.
+  
+6. Alternatively, you can upload an object using `upload_file()`:
+    ```python3
+    import boto3
 
-5. Write your own upload script and test for success. Try getting the file using a public URL. You should get `Permission Denied`.
+    s3 = boto3.client('s3', region_name="us-east-1")
+    bucket = 'ds2002-f25-atr8ec'
+    local_file_path = 'project/vuelta.jpg'
+    s3_key = 'vuelta/2024.jpg' # Example of a different key
+
+    s3.upload_file(
+        Filename=local_file_path,  # The local file path on your system
+        Bucket=bucket,             # The S3 bucket name
+        Key=s3_key                 # The destination object key in S3
+    )
+
+7. Write your own upload script and test for success. Try getting the file using a public URL. You should get `Permission Denied`.
+
+<br>
 
 ### 3. Upload a file to S3 and make it public
 
@@ -409,7 +445,11 @@ Upload a new file to S3 with public visibility. The request will be like the one
 
 Test your file upload using a public URL to see if you can access it.
 
-### 4. WRITE A SCRIPT (2 of 2)
+<br>
+
+---
+
+## Part 5. (AWS SDK): Write a Python Script using `boto3` (2 of 2)
 
 Like the `bash` script you wrote above, now write a simple Python script that performs a similar task. Your script should:
 
@@ -435,50 +475,16 @@ response = s3.generate_presigned_url(
 )
 ```
 
-### OPTIONAL: Turn an S3 Bucket into a Website
+<br>
 
-As a web-enabled storage service, S3 buckets can also serve web content including entire websites. Look at https://www.rc.virginia.edu/ as an example. To configure a bucket into a website follow these steps:
+---
 
-1. Create a new bucket (or follow the remaining steps to change an existing bucket). Make it a "General Purpose" bucket.
-2. For "Object Ownership" select "ACLs Enabled". Leave "Bucket Owner Preferred" ownership selected.
-3. Unselect the "Block All Public Access" box. You want to allow public access.
-4. Select the box acknowledging that you understand the impact of these new settings.
-5. Leave other settings as-is and create the bucket. Once created, click into the bucket name from the list of all buckets.
-6. Select the "Permissions" tab and scroll down to the Bucket Policy area. Edit the policy, inserting this IAM policy (be sure to change the bucket name to your bucket):
+## Step 6: Add, Commit, Push, and Submit on Canvas!
 
-    ```
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Effect": "Allow",
-          "Principal": "*",
-          "Action": "s3:GetObject",
-          "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*"
-        }
-      ]
-    }
-    ```
-
-7. Save your changes to the policy. Switch to the "Properties" tab for your bucket and scroll to the bottom.
-8. Edit the Static Website Hosting section. For the index document enter `index.html` and for the error document enter `error.html`
-9. Save your changes. The page will refresh and you will see a website URL appear, something like http://ds2002-f25-atr8ec.s3-website-us-east-1.amazonaws.com/
-10. To test your site, upload a sample HTML file named `index.html` to your bucket. Here is such a file: https://s3.amazonaws.com/ds2002-resources/labs/lab4/index.html
-
-    ```
-    curl https://s3.amazonaws.com/ds2002-resources/labs/lab4/index.html > index.html
-    aws s3 cp index.html s3://BUCKET-NAME/
-    ```
-11. Then visit the URL of your website-enabled bucket with a browser. The page should be visible.
-
-## Submit your work
-
-Your scripts should be put into a folder `Lab_7` within your repository -- added, committed, and pushed.
-
-Submit the GitHub URL to that folder into Canvas for lab completion credit.
-
-
-
-
-
-
+1.  Stage all of your changes at once: `git add .`.
+2.  Commit your staged changes to your local `Lab_8` branch **with a message**: `git commit -m "Completed Lab 8: S3 Storage"`
+3.  Push your local branch to your remote repository: `git push --set-upstream origin Lab_8`
+4.  Navigate to your forked repository on GitHub.
+5.  Switch to your `Lab_8` branch on GitHub.
+6.  Navigate to your `s3_bucket_lab` directory.
+7.  Copy the URL to your `s3_bucket_lab` directory on your `Lab_8` branch, and paste the URL into the Lab 8 assignment on Canvas.
