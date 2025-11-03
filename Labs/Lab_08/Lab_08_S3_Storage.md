@@ -99,6 +99,8 @@ mkdir s3_bucket_lab && cd s3_bucket_lab
 8. Only for "AWS CLI" click on "Show" and follow the next steps to copy all of what it shows you into the correct AWS `credentials` file.
 <img width="2305" height="1274" alt="image" src="https://github.com/user-attachments/assets/bd09ff61-5b33-4a69-bc5a-ed71140aaa55" />
 
+<br>
+
 ### Configure your Lab Session Credentials
 When we downloaded and installed AWS CLI, it automatically created a `config` and a `credentials` file within a directory at our root called `.aws/`. We will be copy and pasting the entire set of credentials from the Vocareum into the credentials file.
 
@@ -142,6 +144,8 @@ In this lab you will:
 7. Upload a new file with public access enabled, and verify access.
 8. Upload a file and delete it.
 9. Finally, write Python3 snippets using the `boto3` library to upload a private file, a public file, and to presign an object in S3.
+
+<br>
 
 ### S3 Security and HTTP Access by URL
 
