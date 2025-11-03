@@ -159,11 +159,12 @@ For example, this URL is to a publicly-accessible file within a publicly-accessi
 
 ---
 
-## Part 1 (Instructional): Create and Configure an S3 Bucket, Then Load a File
+## Part 1 (AWS CLI - Vocareum) (Instructional): Create and Configure an S3 Bucket, Then Load a File
 
-This part is just instructional and can be done either from your local
+This part is just instructional and should be done within the AWS CLI found in Vocareum:
+<img width="1920" height="467" alt="image" src="https://github.com/user-attachments/assets/9e6b0071-2e2c-4535-93c1-3dc7972dacac" />
 
-1. From either the VS Code or your local terminal, list any existing buckets (there should be none):
+1. List any existing buckets (there should be none):
 
     ```
     aws s3 ls
@@ -235,24 +236,37 @@ This part is just instructional and can be done either from your local
 
     If you refresh the browser after the expiration period has elapsed, what do you see then?
 
-8. **WRITE A SCRIPT (1 of 2)** - Write a simple `bash` script that performs two actions:
+<br>
 
-    1. Uploads a file (image, PDF, etc.) to a private bucket.
-    2. Presigns a URL to that file with an expiration of `604800` (7 days).
-    3. Write the script so that it takes three positional arguments: The name of the local file to upload, the name of the bucket in your account, and the length of expiration in seconds.
+---
 
-    Test your script a few times, with enough of a short expiration that you can observe it timing out.
+## Part 2 (Local Terminal Using AWS CLI): Write a Bash Script
 
-9. Update your bucket's ACL (Access Control List)
+In this part of the lab we are going to switch over to our Git Bash/Terminal to develop our scripts. Sure we could write our scripts in the Vocareum AWS CLI, however, we would need to set up our SSH and clone to that environment, which will just take unnecessary time. If we were not bound by the time limits of the Sandbox, and were working with full AWS accounts, it may be more advantageous to develop in AWS, but not this time.
 
-    - Open the AWS Management Console to perform this task:  https://console.aws.amazon.com/
-    - Within the AWS Management Console, open the S3 service and find your bucket.
-    - Click the name of the bucket to get detailed settings.
-    - Select the Permissions tab within your bucket settings.
-    - Click "Edit" within the Block public access section.
-    - Uncheck all boxes and save your settings. Confirm the change.
-    - Click "Edit within the Object Ownership section.
-    - Enable ACLs by checking the right-hand radio button. Confirm your changes by checking the box. Leave "Bucket owner preferred" selected. Save your changes.
+Given what was covered above, and what we have covered this semester so far, the following should be relatively quick. Please follow the steps below:
+
+1. Write a simple `bash` script that can performs two actions:
+   - Uploads a file (image, PDF, etc.) to a private bucket.
+   - Presigns a URL to that file with an expiration of `604800` (7 days).
+   - Write the script so that it takes three positional arguments: The name of the local file to upload, the name of the bucket in your account, and the length of expiration in seconds.
+
+**NOTE**: Test your script a few times, with enough of a short expiration that you can observe it timing out.
+
+<br>
+
+---
+
+## Part 3 (AWS Console): Update Your bucket's ACL (Access Control List)
+
+1. Open the [AWS Management Console](https://console.aws.amazon.com/) to perform this task. Either click the link or "AWS" in Vocareum, either should work so long as you are logged in and the Lab is active.
+2. Within the AWS Management Console, open the S3 service and find your bucket.
+3. Click the name of the bucket to get detailed settings.
+4. Select the Permissions tab within your bucket settings.
+5. Click "Edit" within the Block public access section.
+6. Uncheck all boxes and save your settings. Confirm the change.
+7. Click "Edit within the Object Ownership section.
+8. Enable ACLs by checking the right-hand radio button. Confirm your changes by checking the box. Leave "Bucket owner preferred" selected. Save your changes.
 
     These changes have not made your bucket or any of its contents public. However, they have now allowed you the option to specifically make any contents public if you choose to do so. (Without the above changes this would not be possible.)
 
