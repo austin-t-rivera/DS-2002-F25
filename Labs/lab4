@@ -1,0 +1,192 @@
+cd ~/Labs/Lab_04
+git checkout main
+git pull origin main
+git checkout -b Lab_4
+
+pip install pandas
+
+mkdir -p pokemon_lab/card_set_lookup
+mkdir -p pokemon_lab/card_inventory
+mkdir -p pokemon_lab/card_set_lookup_test
+mkdir -p pokemon_lab/card_inventory_test
+cd pokemon_lab
+
+cat > card_set_lookup_test/base0.json <<EOF
+{
+  "data": [
+    {"id": "base0-1", "name": "Alakazam", "number": "1", "set": { "id": "base0", "name": "Base Set" }, "tcgplayer": { "prices": { "holofoil": { "market": 65.50 } } }},
+    {"id": "base0-4", "name": "Charizard", "number": "4", "set": { "id": "base0", "name": "Base Set" }, "tcgplayer": { "prices": { "holofoil": { "market": 250.75 } } }},
+    {"id": "base0-58", "name": "Pikachu", "number": "58", "set": { "id": "base0", "name": "Base Set" }, "tcgplayer": { "prices": { "normal": { "market": 5.15 } } }}
+  ]
+}
+EOF
+
+cat > card_inventory_test/binder_0.csv <<EOF
+card_name,set_id,card_number,binder_name,page_number,slot_number
+Alakazam,base0,1,0,1,1
+Charizard,base0,4,0,2,8
+Pikachu,base0,58,0,3,4
+Pikachu,base0,58,0,3,5
+EOF
+
+cat > add_card_set.sh <<'EOF'
+read -p "Enter TCG Card Set ID: " SET_ID
+if [ -z "$SET_ID" ]; then
+    echo "Error: Set ID cannot be empty." >&2
+    exit 1
+fi
+echo "Fetching data for set $SET_ID"
+curl "https://api.pokemontcg.io/v2/cards?q=set.id:$SET_ID" -o "card_set_lookup/$SET_ID.json"
+EOF
+
+chmod +x add_card_set.sh
+
+cat > refresh_card_sets.sh <<'EOF'
+echo "Refreshing all card sets in card_set_lookup/"
+for FILE in card_set_lookup/*.json; do
+    SET_ID=$(basename "$FILE" .json)
+    echo "Updating set $SET_ID"
+    curl "https://api.pokemontcg.io/v2/cards?q=set.id:$SET_ID" -o "$FILE"
+    echo "Data written to $FILE"
+done
+echo "All card sets have been refreshed"
+EOF
+
+chmod +x refresh_card_sets.sh
+
+cat > update_portfolio.py <<'EOF'
+import pandas as pd
+import os
+import sys
+import json
+def _load_lookup_data(lookup_dir):
+    all_lookup_df=[]
+    for file in os.listdir(lookup_dir):
+        if file.endswith('.json'):
+            filepath=os.path.join(lookup_dir,file)
+            with open(filepath,'r') as f:
+                data=json.load(f)
+            df=pd.json_normalize(data['data'])
+            df['card_market_value']=df.get('tcgplayer.prices.holofoil.market',df.get('tcgplayer.prices.normal.market',0.0))
+            df.rename(columns={'id':'card_id','name':'card_name','number':'card_number','set.id':'set_id','set.name':'set_name'},inplace=True)
+            required_cols=['card_id','card_name','card_number','set_id','set_name','card_market_value']
+            all_lookup_df.append(df[required_cols].copy())
+    lookup_df=pd.concat(all_lookup_df,ignore_index=True)
+    return lookup_df.drop_duplicates(subset=['card_id'],keep='first')
+def _load_inventory_data(inventory_dir):
+    inventory_data=[]
+    for file in os.listdir(inventory_dir):
+        if file.endswith('.csv'):
+            df=pd.read_csv(os.path.join(inventory_dir,file))
+            inventory_data.append(df)
+    if not inventory_data:
+        return pd.DataFrame()
+    inventory_df=pd.concat(inventory_data,ignore_index=True)
+    inventory_df['card_id']=inventory_df['set_id'].astype(str)+'-'+inventory_df['card_number'].astype(str)
+    return inventory_df
+def update_portfolio(inventory_dir,lookup_dir,output_file):
+    lookup_df=_load_lookup_data(lookup_dir)
+    inventory_df=_load_inventory_data(inventory_dir)
+    if inventory_df.empty:
+        print("No inventory found",file=sys.stderr)
+        pd.DataFrame(columns=['card_id','card_name','card_number','set_id','set_name','card_market_value','binder_name','page_number','slot_number','index']).to_csv(output_file,index=False)
+        return
+    portfolio_df=pd.merge(inventory_df,lookup_df,on='card_id',how='left')
+    portfolio_df['card_market_value'].fillna(0.0,inplace=True)
+    portfolio_df['set_name'].fillna('NOT_FOUND',inplace=True)
+    portfolio_df['index']=portfolio_df['binder_name'].astype(str)+'-'+portfolio_df['page_number'].astype(str)+'-'+portfolio_df['slot_number'].astype(str)
+    final_cols=['card_id','card_name','card_number','set_id','set_name','card_market_value','binder_name','page_number','slot_number','index']
+    portfolio_df[final_cols].to_csv(output_file,index=False)
+    print("Portfolio CSV created at",output_file)
+def main():
+    update_portfolio('./card_inventory/','./card_set_lookup/','card_portfolio.csv')
+def test():
+    update_portfolio('./card_inventory_test/','./card_set_lookup_test/','test_card_portfolio.csv')
+if __name__=="__main__":
+    print("Running in Test Mode",file=sys.stderr)
+    test()
+EOF
+
+cat > generate_summary.py <<'EOF'
+import pandas as pd
+import os
+import sys
+def generate_summary(portfolio_file):
+    if not os.path.exists(portfolio_file):
+        print("Portfolio file not found",file=sys.stderr)
+        sys.exit(1)
+    df=pd.read_csv(portfolio_file)
+    if df.empty:
+        print("Portfolio file is empty")
+        return
+    total_portfolio_value=df['card_market_value'].sum()
+    most_valuable_card=df.loc[df['card_market_value'].idxmax()]
+    print(f"Total Portfolio Value: ${total_portfolio_value:,.2f}")
+    print(f"Most Valuable Card: {most_valuable_card['card_name']} (ID: {most_valuable_card['card_id']}) Value: ${most_valuable_card['card_market_value']:,.2f}")
+def main():
+    generate_summary('card_portfolio.csv')
+def test():
+    generate_summary('test_card_portfolio.csv')
+if __name__=="__main__":
+    test()
+EOF
+
+cat > pipeline.py <<'EOF'
+import update_portfolio
+import generate_summary
+import sys
+def run_production_pipeline():
+    print("Starting full production pipeline",file=sys.stderr)
+    print("Updating Portfolio",file=sys.stderr)
+    update_portfolio.main()
+    print("Generating Summary",file=sys.stderr)
+    generate_summary.main()
+    print("Pipeline Complete",file=sys.stderr)
+if __name__=="__main__":
+    run_production_pipeline()
+EOF
+
+cat > Makefile <<'EOF'
+PORTFOLIO_CSV := card_portfolio.csv
+TEST_PORTFOLIO_CSV := test_card_portfolio.csv
+.PHONY: all Add_Set Refresh_Sets Portfolio_Build Clean Test
+all: Portfolio_Build
+Add_Set:
+    @echo "--- Adding New Card Set ---"
+    @./add_card_set.sh
+Refresh_Sets:
+    @echo "--- Refreshing All Card Sets ---"
+    @./refresh_card_sets.sh
+Portfolio_Build: update_portfolio.py generate_summary.py pipeline.py
+    @echo "--- Starting Portfolio Build Workflow ---"
+    @echo "Do you want to add a NEW card set? (yes/no)"
+    @read USER_ADD; \
+    if [ "$$USER_ADD" = "yes" ]; then \
+        $(MAKE) Add_Set; \
+        echo "Card set added. Add another? (yes/no)"; \
+        read USER_ADD_AGAIN; \
+        if [ "$$USER_ADD_AGAIN" = "yes" ]; then \
+            $(MAKE) Add_Set; \
+        fi; \
+    fi
+    @echo "Do you want to refresh ALL existing card sets? (yes/no)"
+    @read USER_REFRESH; \
+    if [ "$$USER_REFRESH" = "yes" ]; then \
+        $(MAKE) Refresh_Sets; \
+    fi
+    @python ./pipeline.py
+Test: update_portfolio.py generate_summary.py card_set_lookup_test/*.json
+    @echo "--- Running Test Pipeline (Built-in Test Modes) ---"
+    @python ./update_portfolio.py
+    @python ./generate_summary.py
+    @echo "Test complete."
+Clean:
+    @echo "--- Cleaning Generated Files ---"
+    @rm -f $(PORTFOLIO_CSV) $(TEST_PORTFOLIO_CSV)
+    @rm -f card_set_lookup/*.json
+    @echo "Clean complete."
+EOF
+
+make Test
+make Add_Set
+make all
