@@ -1,0 +1,162 @@
+"""
+lab_script.py
+
+Creates:
+ - raw_survey_data.csv
+ - raw_course_catalog.json
+
+Cleans / normalizes:
+ - clean_survey_data.csv
+ - clean_course_catalog.csv
+
+Also writes:
+ - survey_schema.md
+ - catalog_schema.md
+
+Requirements:
+ - pandas
+"""
+
+import csv
+import json
+from pathlib import Path
+import pandas as pd
+
+BASE_DIR = Path.cwd() 
+RAW_SURVEY = BASE_DIR / "raw_survey_data.csv"
+RAW_COURSES = BASE_DIR / "raw_course_catalog.json"
+CLEAN_SURVEY = BASE_DIR / "clean_survey_data.csv"
+CLEAN_COURSES = BASE_DIR / "clean_course_catalog.csv"
+SURVEY_SCHEMA = BASE_DIR / "survey_schema.md"
+CATALOG_SCHEMA = BASE_DIR / "catalog_schema.md"
+
+
+def create_raw_survey(path: Path):
+    rows = [
+        {"student_id": 1001, "major": "Computer Science", "GPA": 3, "is_cs_major": "Yes", "credits_taken": "10.5"},
+        {"student_id": 1002, "major": "Mathematics", "GPA": 3.7, "is_cs_major": "No", "credits_taken": "12"},
+        {"student_id": 1003, "major": "Statistics", "GPA": "4", "is_cs_major": "No", "credits_taken": "9.0"},
+        {"student_id": 1004, "major": "Computer Science", "GPA": "3.5", "is_cs_major": "Yes", "credits_taken": "15"},
+        {"student_id": 1005, "major": "Biology", "GPA": 2, "is_cs_major": "No", "credits_taken": "8.25"},
+    ]
+    fieldnames = ["student_id", "major", "GPA", "is_cs_major", "credits_taken"]
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for r in rows:
+            writer.writerow(r)
+    print(f"Created raw survey CSV at: {path}")
+
+
+def create_raw_courses(path: Path):
+    courses = [
+        {
+            "course_id": "DS2002",
+            "section": "001",
+            "title": "Data Science Systems",
+            "level": 200,
+            "instructors": [
+                {"name": "Austin Rivera", "role": "Primary"},
+                {"name": "Heywood Williams-Tracy", "role": "TA"},
+            ],
+        },
+        {
+            "course_id": "DS3001",
+            "section": "002",
+            "title": "Machine Learning Foundations",
+            "level": 300,
+            "instructors": [
+                {"name": "Ada Lovelace", "role": "Primary"},
+            ],
+        },
+        {
+            "course_id": "BIO101",
+            "section": "101",
+            "title": "Intro to Biology",
+            "level": 100,
+            "instructors": [
+                {"name": "Charlie Bucket", "role": "Primary"},
+                {"name": "Sam O'Neill", "role": "Lab Instructor"},
+            ],
+        },
+    ]
+    with path.open("w", encoding="utf-8") as f:
+        json.dump(courses, f, indent=2)
+    print(f"Created raw course JSON at: {path}")
+
+
+def clean_survey(raw_csv: Path, out_csv: Path):
+    df = pd.read_csv(raw_csv)
+    df["is_cs_major"] = (
+        df["is_cs_major"].astype(str).str.strip().str.lower().map({"yes": True, "no": False})
+    )
+    df["GPA"] = pd.to_numeric(df["GPA"], errors="coerce").astype(float)
+    df["credits_taken"] = pd.to_numeric(df["credits_taken"], errors="coerce").astype(float)
+    df["student_id"] = pd.to_numeric(df["student_id"], errors="coerce").astype(int)
+    df = df[["student_id", "major", "GPA", "is_cs_major", "credits_taken"]]
+    df.to_csv(out_csv, index=False)
+    print(f"Wrote cleaned survey CSV to: {out_csv}")
+    return df
+
+
+def normalize_courses(raw_json: Path, out_csv: Path):
+    with raw_json.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+    df = pd.json_normalize(
+        data,
+        record_path=["instructors"],
+        meta=["course_id", "section", "title", "level"],
+        errors="ignore",
+    )
+    df = df.rename(columns={"name": "instructor_name", "role": "instructor_role"})
+    cols = ["course_id", "section", "title", "level", "instructor_name", "instructor_role"]
+    df = df[cols]
+    df.to_csv(out_csv, index=False)
+    print(f"Wrote normalized course CSV to: {out_csv}")
+    return df
+
+
+def write_survey_schema(path: Path):
+    content = """| Column Name | Required Data Type | Brief Description |
+| :--- | :--- | :--- |
+| `student_id` | `INT` | Unique identifier for the student. |
+| `major` | `VARCHAR(100)` | The student's declared major. |
+| `GPA` | `FLOAT` | Grade Point Average on a 0.0 - 4.0 scale. |
+| `is_cs_major` | `BOOL` | Whether the student is a computer science major (True/False). |
+| `credits_taken` | `FLOAT` | Total credits the student has taken (decimal allowed). |
+"""
+    path.write_text(content, encoding="utf-8")
+    print(f"Wrote survey schema to: {path}")
+
+
+def write_catalog_schema(path: Path):
+    content = """| Column Name | Required Data Type | Brief Description |
+| :--- | :--- | :--- |
+| `course_id` | `VARCHAR(20)` | Course identifier (e.g., DS2002). |
+| `section` | `VARCHAR(20)` | Course section identifier. |
+| `title` | `VARCHAR(200)` | Human-readable course title. |
+| `level` | `INT` | Course level (e.g., 100, 200, 300). |
+| `instructor_name` | `VARCHAR(100)` | Instructor's full name. |
+| `instructor_role` | `VARCHAR(50)` | Instructor role for that course (e.g., Primary, TA). |
+"""
+    path.write_text(content, encoding="utf-8")
+    print(f"Wrote catalog schema to: {path}")
+
+
+def main():
+    create_raw_survey(RAW_SURVEY)
+    create_raw_courses(RAW_COURSES)
+
+    cleaned_survey_df = clean_survey(RAW_SURVEY, CLEAN_SURVEY)
+    normalized_courses_df = normalize_courses(RAW_COURSES, CLEAN_COURSES)
+
+    write_survey_schema(SURVEY_SCHEMA)
+    write_catalog_schema(CATALOG_SCHEMA)
+
+    print("\nAll done. Files created:")
+    for p in [RAW_SURVEY, RAW_COURSES, CLEAN_SURVEY, CLEAN_COURSES, SURVEY_SCHEMA, CATALOG_SCHEMA]:
+        print(f" - {p.name}")
+
+
+if __name__ == "__main__":
+    main()

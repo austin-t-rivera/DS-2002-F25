@@ -1,0 +1,102 @@
+Andrews-MacBook-Air-7% cd ~/Documents/GitHub/DS-2002-F25
+
+Andrews-MacBook-Air-7 DS-2002-F25% git checkout main
+Switched to branch 'main'
+Your branch is up to date with 'origin/main'.
+
+Andrews-MacBook-Air-7 DS-2002-F25% git status
+On branch main
+nothing to commit, working tree clean
+
+Andrews-MacBook-Air-7 DS-2002-F25% git remote -v
+origin  git@github.com:andrewc4321/DS-2002-F25.git (fetch)
+origin  git@github.com:andrewc4321/DS-2002-F25.git (push)
+upstream  git@github.com:austin-t-rivera/DS-2002-F25.git (fetch)
+upstream  git@github.com:austin-t-rivera/DS-2002-F25.git (push)
+
+Andrews-MacBook-Air-7 DS-2002-F25% git fetch upstream
+remote: Enumerating objects: 10, done.
+remote: Counting objects: 100% (10/10), done.
+remote: Compressing objects: 100% (8/8), done.
+remote: Total 8 (delta 2), reused 0 (delta 0)
+Unpacking objects: 100% (8/8), done.
+From github.com:austin-t-rivera/DS-2002-F25
+ * [new branch]      main       -> upstream/main
+
+Andrews-MacBook-Air-7 DS-2002-F25% git merge upstream/main main
+Already up to date.
+
+Andrews-MacBook-Air-7 DS-2002-F25% ./update_repo.sh
+Pulling latest changes and syncing branches...
+Up to date.
+
+Andrews-MacBook-Air-7 DS-2002-F25% cd Activities/Activity_04
+
+Andrews-MacBook-Air-7 Activity_04% git checkout -b Activity_4
+Switched to a new branch 'Activity_4'
+
+Andrews-MacBook-Air-7 Activity_04% mkdir python_activity && cd python_activity
+
+Andrews-MacBook-Air-7 python_activity% curl -s "https://api.pokemontcg.io/v2/cards?q=set.id:base1&page=1&pageSize=1" > test.json
+
+Andrews-MacBook-Air-7 python_activity% cat test.json
+{"data":[{"id":"base1-1","name":"Alakazam","supertype":"Pokémon","subtypes":["Stage 2"],"hp":"80","types":["Psychic"],"evolvesFrom":"Kadabra","attacks":[{"name":"Confuse Ray","cost":["Psychic","Psychic","Psychic"],"convertedEnergyCost":3,"damage":"30","text":"Flip a coin. If heads, the Defending Pokémon is now Confused."}],"weaknesses":[{"type":"Psychic","value":"×2"}],"set":{"id":"base1","name":"Base","series":"Base","printedTotal":102,"total":102,"legalities":{"unlimited":"Legal"},"ptcgoCode":"BS"},"number":"1","rarity":"Rare Holo","tcgplayer":{"prices":{"holofoil":{"low":41.0,"mid":60.0,"high":125.0,"market":58.25}}}}],"page":1,"pageSize":1,"count":1,"totalCount":102}
+
+Andrews-MacBook-Air-7 python_activity% cat test.json | jq '.'
+{
+  "data": [
+    {
+      "id": "base1-1",
+      "name": "Alakazam",
+      "supertype": "Pokémon",
+      "hp": "80",
+      "types": [
+        "Psychic"
+      ],
+      "set": {
+        "id": "base1",
+        "name": "Base"
+      },
+      "rarity": "Rare Holo",
+      "tcgplayer": {
+        "prices": {
+          "holofoil": {
+            "market": 58.25
+          }
+        }
+      }
+    }
+  ]
+}
+
+Andrews-MacBook-Air-7 python_activity% touch process_cards.py
+
+Andrews-MacBook-Air-7 python_activity% chmod +x process_cards.py
+
+Andrews-MacBook-Air-7 python_activity% nano process_cards.py
+# (User pastes the Python code as per instructions, then saves and exits)
+
+Andrews-MacBook-Air-7 python_activity% curl -s "https://api.pokemontcg.io/v2/cards?q=set.id:base1&page=1&pageSize=20" | python ./process_cards.py > pokemon_cards.csv
+
+Andrews-MacBook-Air-7 python_activity% cat pokemon_cards.csv
+card_id,card_name,set_name,rarity,market_price
+base1-1,Alakazam,Base,Rare Holo,58.25
+base1-2,Blastoise,Base,Rare Holo,64.52
+base1-3,Chansey,Base,Rare Holo,36.10
+base1-4,Charizard,Base,Rare Holo,315.00
+base1-5,Clefairy,Base,Rare Holo,29.75
+base1-6,Gyarados,Base,Rare Holo,37.55
+base1-7,Hitmonchan,Base,Rare Holo,21.00
+base1-8,Magneton,Base,Rare Holo,18.20
+base1-9,Mewtwo,Base,Rare Holo,47.80
+base1-10,Nidoking,Base,Rare Holo,25.10
+base1-11,Ninetales,Base,Rare Holo,31.50
+base1-12,Poliwrath,Base,Rare Holo,19.40
+base1-13,Raichu,Base,Rare Holo,28.60
+base1-14,Venusaur,Base,Rare Holo,65.00
+base1-15,Zapdos,Base,Rare Holo,35.50
+base1-16,Beedrill,Base,Rare,6.45
+base1-17,Dragonair,Base,Rare,12.75
+base1-18,Dugtrio,Base,Rare,4.90
+base1-19,Electabuzz,Base,Rare,7.30
+base1-20,Electrode,Base,Rare,5.25

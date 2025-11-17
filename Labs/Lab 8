@@ -1,0 +1,19 @@
+#!/bin/bash
+file=$1
+bucket=$2
+expire=$3
+aws s3 cp "$file" s3://"$bucket"/
+presigned=$(aws s3 presign --expires-in "$expire" s3://"$bucket"/"$file")
+echo "$presigned"
+import urllib.request
+import boto3
+import sys
+url = sys.argv[1]
+bucket = sys.argv[2]
+key = sys.argv[3]
+expires = int(sys.argv[4])
+urllib.request.urlretrieve(url, key)
+s3 = boto3.client('s3', region_name='us-east-1')
+s3.upload_file(key, bucket, key)
+response = s3.generate_presigned_url('get_object', Params={'Bucket': bucket, 'Key': key}, ExpiresIn=expires)
+print(response)
